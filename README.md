@@ -58,3 +58,20 @@ Hospedagem estática **não roda o servidor do jogo**. Você precisa de dois lug
 1. **Servidor** (Node com WebSocket): Render, Railway, Fly.io ou VPS. Build: `npm install`. Start: `npm start`. Anote a URL (ex.: `https://ball-fall.onrender.com`).
 2. **Cliente**: crie `client/.env.production` com `VITE_WS_URL=wss://ball-fall.onrender.com/ws`, rode `npm run build` e envie a pasta `dist` para o EdgeOne.
 Mais simples: hospede o projeto inteiro só no servidor Node (ele também serve o `dist`), sem EdgeOne.
+
+## Loja, contas Google e itens
+A loja é a página `/loja.html` do mesmo servidor (mesma conta e mesmo banco do jogo). Quem entra com Google na loja e depois no jogo (mesmo navegador) já tem os itens equipados, porque o servidor lê o cookie de sessão e consulta o banco.
+- **Moedas**: 300 de boas-vindas, 100 por dia (🎁 Diária) e recompensas de partida (calculadas no servidor, 1 vez por partida, teto de 1000/dia). Não há pagamento com dinheiro real nesta versão (veja Limitações).
+- **Itens**: acessórios da bola e armas. Qualquer pessoa logada pode **publicar** (custa 100 moedas, até 3 por dia): escolhe modelo, cor, preço e dano de **5 a 20**. O item só aparece na loja depois que um **admin** (e-mail em `ADMIN_EMAILS`) aprova na aba Moderação.
+- **Equilíbrio (sem pay-to-win)**: a cadência do tiro é calculada pelo servidor a partir do dano, então o DPS nunca passa do Blaster padrão (dano 5 = tiro rápido; 20 = tiro lento). A arma customizada substitui o Blaster (tecla 1).
+- **Segurança**: sessão em cookie HttpOnly (só o hash fica no banco), CSRF token + checagem de origem, limite de requisições por IP e por conta, validação de todos os campos no servidor, moedas em livro-razão (recompensa e compra não duplicam), moderação antes de publicar, CSP na loja, uma conta = uma conexão de jogo.
+
+### Configurar o login Google
+1. console.cloud.google.com → crie um projeto → *APIs e serviços → Tela de consentimento OAuth* (externo) → *Credenciais → Criar credenciais → ID do cliente OAuth → Aplicativo da Web*.
+2. *URIs de redirecionamento autorizados*: `https://SEU-DOMINIO/auth/google/callback` (e `http://localhost:5173/auth/google/callback` para testes).
+3. Coloque `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `PUBLIC_URL` e `ADMIN_EMAILS` nas variáveis do servidor (Railway → Variables). **Nunca** no código.
+4. **Railway**: crie um **Volume** montado em `/data` e defina `DB_PATH=/data/ballfall.db`; sem volume o banco é apagado a cada deploy.
+Teste local sem Google: `DEV_LOGIN=1` e abra `http://localhost:5173/auth/dev?email=voce@teste.com`.
+
+### Limitações da loja
+Não há pagamento com dinheiro real (exigiria Mercado Pago/Stripe com webhook assinado, outra etapa). Espada é só um modelo visual: dispara como as demais armas, não há combate corpo a corpo. Os acessórios/armas valem para quem entra com a conta no mesmo domínio. A loja precisa ser servida pelo mesmo domínio do jogo (cookie); se o jogo ficar no EdgeOne e o servidor no Railway, o cookie não é compartilhado — hospede tudo no Railway.
