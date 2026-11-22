@@ -1,0 +1,27 @@
+{
+  "name": "ball-fall",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n srv,web \"tsx watch server/index.ts\" \"vite\"",
+    "build": "vite build",
+    "start": "tsx server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "start:server": "tsx server/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "three": "^0.169.0",
+    "ws": "^8.18.0",
+    "tsx": "^4.19.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "@types/three": "^0.169.0",
+    "@types/ws": "^8.5.12",
+    "concurrently": "^9.0.1",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
+  }
+}
